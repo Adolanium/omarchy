@@ -61,6 +61,15 @@ grep -Fxq '1:--app-id=org.custom' "$argv_log" ||
   fail "tui wrapper keeps the app id flag whole" "$(cat "$argv_log")"
 pass "tui wrapper keeps the app id flag whole"
 
+# printf %q with no arguments emits ''. The command string must stay free of it.
+run_wrapper "$ROOT/bin/omarchy-launch-or-focus-tui"
+
+grep -Fxq '0:omarchy-launch-tui' "$argv_log" ||
+  fail "tui wrapper with no arguments still launches omarchy-launch-tui" "$(cat "$argv_log")"
+(( $(wc -l <"$argv_log") == 1 )) ||
+  fail "tui wrapper with no arguments adds no empty word" "$(cat "$argv_log")"
+pass "tui wrapper with no arguments adds no empty word"
+
 # --- omarchy-launch-or-focus-webapp ---------------------------------------------
 
 # A URL with a query string holds & and =. Unquoted, eval reads & as a command
@@ -72,6 +81,28 @@ grep -Fxq '1:https://chat.example/?a=1&b=2' "$argv_log" ||
 (( $(wc -l <"$argv_log") == 2 )) ||
   fail "webapp wrapper adds no extra words through the re-parse" "$(cat "$argv_log")"
 pass "webapp wrapper carries a URL with a query string whole"
+
+# Only a window pattern. Quoting must not add the '' that printf %q emits
+# for an empty argument list.
+run_wrapper "$ROOT/bin/omarchy-launch-or-focus-webapp" "Chat"
+
+grep -Fxq '0:omarchy-launch-webapp' "$argv_log" ||
+  fail "webapp wrapper with only a window pattern launches omarchy-launch-webapp" "$(cat "$argv_log")"
+(( $(wc -l <"$argv_log") == 1 )) ||
+  fail "webapp wrapper with only a window pattern adds no empty word" "$(cat "$argv_log")"
+pass "webapp wrapper with only a window pattern adds no empty word"
+
+# Command substitution runs during eval, before exec, so a payload that creates
+# a file proves the argument was re-parsed as code.
+injected="$work_dir/injected"
+payload="\$(touch $injected)"
+run_wrapper "$ROOT/bin/omarchy-launch-or-focus-webapp" "Chat" "$payload"
+
+[[ ! -e $injected ]] ||
+  fail "webapp wrapper does not run a command substitution in an argument"
+grep -Fxq "1:$payload" "$argv_log" ||
+  fail "webapp wrapper passes a command substitution through as text" "$(cat "$argv_log")"
+pass "webapp wrapper passes a command substitution through as text"
 
 # --- omarchy-launch-tui ----------------------------------------------------------
 
