@@ -22,7 +22,7 @@ The design goal is:
 | Path | Owner | Purpose |
 | --- | --- | --- |
 | `${XDG_RUNTIME_DIR:-/tmp}/omarchy-update.lock` | user | Prevent overlapping update runs. Owned by `omarchy-update-lock`; compatibility wrappers inherit/respect it. |
-| `~/.local/state/omarchy/update.log` | user | Transcript of `omarchy update`, used by `omarchy-update-analyze-logs`. |
+| `~/.local/state/omarchy/update.log` | user | Transcript of `omarchy update`, mode 0600 in a mode 0700 directory, used by `omarchy-update-analyze-logs`. |
 | `~/.local/state/omarchy/current/` | user | Generated active theme, selected theme name, and current background symlink. |
 | `~/.local/state/omarchy/migrations/` | user | Per-user migration markers. |
 | `~/.local/state/omarchy/reboot-required` | user | Optional reboot marker checked by `omarchy-update-restart`. |
