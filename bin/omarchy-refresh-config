@@ -1,9 +1,9 @@
 #!/bin/bash
 
-set -e
-
 # omarchy:summary=Copy a shipped user config from $OMARCHY_PATH/config into ~/.config (backs up your version).
 # omarchy:args=<config-path>
+
+set -e
 
 config_file=${1:-}
 
