@@ -104,6 +104,18 @@ grep -Fxq "1:$payload" "$argv_log" ||
   fail "webapp wrapper passes a command substitution through as text" "$(cat "$argv_log")"
 pass "webapp wrapper passes a command substitution through as text"
 
+# %q escapes a trailing space as "\ ". Word-splitting the string before eval
+# would merge it into the next word, or leave a stray backslash on the last.
+run_wrapper "$ROOT/bin/omarchy-launch-or-focus-tui" mytui 'trailing ' sentinel 'last '
+
+grep -Fxq '2:trailing ' "$argv_log" ||
+  fail "tui wrapper keeps a trailing space inside its argument" "$(cat "$argv_log")"
+grep -Fxq '3:sentinel' "$argv_log" ||
+  fail "tui wrapper keeps the word after a trailing space separate" "$(cat "$argv_log")"
+grep -Fxq '4:last ' "$argv_log" ||
+  fail "tui wrapper keeps a trailing space on the last argument" "$(cat "$argv_log")"
+pass "tui wrapper keeps trailing spaces inside their arguments"
+
 # --- omarchy-launch-tui ----------------------------------------------------------
 
 # Direct quoting: the command path and the app id reach the terminal unchanged.
